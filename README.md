@@ -1,7 +1,7 @@
 # 🚀 NexChat - Next Generation Real-Time Communication Platform
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x200.png?text=NexChat+Banner" alt="NexChat Banner">
+  <img src="assets/banner.jpg" alt="NexChat Banner">
 </div>
 
 ## 🌟 Overview
