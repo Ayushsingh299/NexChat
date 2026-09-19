@@ -1,0 +1,17 @@
+{
+  "name": "NexChat",
+  "short_name": "NexChat",
+  "description": "A Secure, Scalable Multithreaded Real-Time Communication Platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111116",
+  "theme_color": "#111116",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

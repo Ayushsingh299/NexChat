@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  nexchat-db:
+    image: postgres:15-alpine
+    container_name: nexchat-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: nexchat_user
+      POSTGRES_PASSWORD: nexchat_password
+      POSTGRES_DB: nexchat_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: nexchat-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  minio:
+    image: minio/minio
+    container_name: nexchat-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    networks:
+      - nexchat-network
+
+  nexchat-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nexchat-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      nexchat-db:
+        condition: service_healthy
+      nexchat-redis:
+        condition: service_started
+      nexchat-minio:
+        condition: service_started
+    networks:
+      - nexchat-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
+  nexchat-ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: nexchat-ml-service
+    depends_on:
+      nexchat-redis:
+        condition: service_started
+    networks:
+      - nexchat-network
+    environment:
+      - REDIS_HOST=nexchat-redis
+      - REDIS_PORT=6379
+
+  nexchat-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nexchat-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - nexchat-backend
+    networks:
+      - nexchat-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: nexchat-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - nexchat-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: nexchat-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - nexchat-network
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio_data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  nexchat-network:
+    driver: bridge

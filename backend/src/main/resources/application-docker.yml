@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://nexchat-db:5432/nexchat_db
+    username: nexchat_user
+    password: nexchat_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  data:
+    redis:
+      host: nexchat-redis
+      port: 6379
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  expiration: 86400000
+
+minio:
+  url: http://nexchat-minio:9000
+  access:
+    key: minioadmin
+  secret:
+    key: minioadmin
+  bucket:
+    name: nexchat-bucket

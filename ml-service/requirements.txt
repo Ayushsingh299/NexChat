@@ -1,0 +1,4 @@
+fastapi==0.104.1
+uvicorn==0.24.0.post1
+redis==5.0.1
+textblob==0.17.1
